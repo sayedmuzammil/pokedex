@@ -38,7 +38,10 @@ const getTypeColor = (type) => {
 const PokemonCard = ({ pokemon }) => {
   return (
     <Card hoverable style={{ textAlign: 'center' }}>
+      {/* Get the image based for each pokemon*/}
       <Image width="80%" preview={false} src={pokemon.image} />
+
+      {/* Get the ID based for each pokemon*/}
       <div
         style={{
           fontSize: '18px',
@@ -48,6 +51,8 @@ const PokemonCard = ({ pokemon }) => {
       >
         {pokemon.id}
       </div>
+
+      {/* Get the name based for each pokemon*/}
       <Title
         level={3}
         style={{ marginTop: '10px', color: '#42494D' }}
@@ -55,6 +60,7 @@ const PokemonCard = ({ pokemon }) => {
         {pokemon.name}
       </Title>
       <Row gutter={[8, 8]} justify="center">
+        {/* Get the type based for each pokemon*/}
         {pokemon.types.map((type, index) => (
           <Col key={index}>
             <div
@@ -90,16 +96,16 @@ const App = () => {
         );
 
         // Step 2: Get the list of Pokemon names & URLs
-        // API response save in results []
-        console.log(response);
+        // API response save in "results":[{name: "bulbasaur", url: "https://pokeapi.co/api/v2/pokemon/1/"}]
         const pokemonList = response.data.results;
 
-        // Step 3: Get more details for each Pokémon
+        // Step 3: Prepare array to save all the pokemon
         let detailedPokemon = [];
 
         for (let pokemon of pokemonList) {
           const res = await axios.get(pokemon.url); // Get detailed data
           const pokeInfo = res.data;
+          console.log(pokeInfo);
 
           // Step 4: Format the data to be easier to use
           const pokemonData = {
@@ -109,7 +115,7 @@ const App = () => {
               pokeInfo.name.slice(1), // Capitalize name
             image:
               pokeInfo.sprites.other['official-artwork']
-                .front_default, // Get image
+                .front_default, // Get image from "sprites -> other -> official-artwork -> front_default"
             types: pokeInfo.types.map((t) => ({
               name: t.type.name, // Pokémon type (fire, water, etc.)
               color: getTypeColor(t.type.name), // Get color based on type
@@ -212,6 +218,7 @@ const App = () => {
         </section>
         <section>
           <Row gutter={[16, 16]}>
+            {/* Show all PokemonCard */}
             {pokemonList.map((pokemon) => (
               <Col xs={24} sm={12} md={8} lg={6} key={pokemon.id}>
                 <PokemonCard pokemon={pokemon} />
