@@ -46,7 +46,7 @@ const PokemonList = () => {
         for (let pokemon of pokemonList) {
           const res = await axios.get(pokemon.url); // Get detailed data
           const pokeInfo = res.data;
-          console.log(pokeInfo);
+          //console.log(pokeInfo);
 
           // Step 4: Format the data to be easier to use
           const pokemonData = {
@@ -61,10 +61,16 @@ const PokemonList = () => {
               name: t.type.name, // Pokémon type (fire, water, etc.)
               color: getTypeColor(t.type.name), // Get color based on type
             })),
+            weight: pokeInfo.weight,
+            height: pokeInfo.height,
+            abilities: pokeInfo?.abilities?.map((a) => ({
+              ability: a.ability.name,
+            })),
           };
 
           // Add the formatted Pokémon data to our list
           detailedPokemon.push(pokemonData);
+          console.log(detailedPokemon);
         }
 
         // Step 5: Save the Pokémon list in state
