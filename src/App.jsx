@@ -53,7 +53,12 @@ const App = () => {
             align="middle"
             style={{ height: '800px' }}
           >
-            <Col span={12} style={{ paddingLeft: '140px' }}>
+            <Col
+              span={12}
+              xs={24}
+              xl={12}
+              style={{ paddingLeft: '140px' }}
+            >
               <Flex vertical align="left" justify="space-evenly">
                 <Typography.Title
                   level={2}
@@ -88,7 +93,7 @@ const App = () => {
                 Check Pokedex{' '}
               </Button>
             </Col>
-            <Col span={12}>
+            <Col span={12} xs={0} xl={12}>
               <div
                 style={{ display: 'flex', justifyContent: 'center' }}
               >

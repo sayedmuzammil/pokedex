@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import PokemonCard from './PokemonCard';
-import { Row, Col, Pagination } from 'antd';
+import { Row, Col, Pagination, Radio, Select } from 'antd';
 import axios from 'axios';
 
 // Function to get color based on type
@@ -20,9 +20,15 @@ const getTypeColor = (type) => {
 
 const PokemonList = () => {
   const [pokemonList, setPokemonList] = useState([]);
+  const [allPokemon, setAllPokemon] = useState([]); // Store unfiltered Pokémon list
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(12);
   const [total, setTotal] = useState(0);
+  const [filterType, SetFilterType] = useState('all');
+
+  const typeChange = (e) => {
+    SetFilterType(e.target.value);
+  };
 
   useEffect(() => {
     // Function to get Pokemon data
@@ -74,6 +80,7 @@ const PokemonList = () => {
         }
 
         // Step 5: Save the Pokémon list in state
+        setAllPokemon(detailedPokemon); // Save unfiltered Pokémon list
         setPokemonList(detailedPokemon);
       } catch (error) {
         console.error('Error fetching Pokémon:', error);
@@ -83,6 +90,18 @@ const PokemonList = () => {
     fetchPokemon();
   }, [currentPage, pageSize]);
 
+  useEffect(() => {
+    // Apply filter when `placement` changes
+    const filteredPokemon =
+      filterType === 'all'
+        ? allPokemon // Show all Pokémon if 'all' is selected
+        : allPokemon.filter((pokemon) =>
+            pokemon.types.some((t) => t.name === filterType)
+          );
+
+    setPokemonList(filteredPokemon);
+  }, [filterType, allPokemon]);
+
   const handlePageChange = (page, pageSize) => {
     setCurrentPage(page);
     setPageSize(pageSize);
@@ -90,6 +109,21 @@ const PokemonList = () => {
 
   return (
     <>
+      <Radio.Group
+        value={filterType}
+        onChange={typeChange}
+        style={{ marginBottom: '20px' }}
+      >
+        <Radio.Button value="all">All</Radio.Button>
+        <Radio.Button value="fire">Fire</Radio.Button>
+        <Radio.Button value="water">Water</Radio.Button>
+        <Radio.Button value="grass">Grass</Radio.Button>
+        <Radio.Button value="poison">Poison</Radio.Button>
+        <Radio.Button value="flying">Flying</Radio.Button>
+        <Radio.Button value="electric">Electric</Radio.Button>
+        <Radio.Button value="normal">Normal</Radio.Button>
+      </Radio.Group>
+
       <Row gutter={[16, 16]}>
         {/* Show all PokemonCard */}
         {pokemonList.map((pokemon) => (
@@ -104,6 +138,7 @@ const PokemonList = () => {
         total={total}
         onChange={handlePageChange}
         showSizeChanger
+        pageSizeOptions={['12', '24', '36', '48', '60']} // Available options
         align="center"
         style={{ marginTop: '10px' }}
       />
