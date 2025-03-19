@@ -144,6 +144,10 @@ const PokemonList = () => {
         <Radio.Button value="fairy">Fairy</Radio.Button>
       </Radio.Group>
 
+      <div align="right" width="20%">
+        <h3>Total Pokemons :{total}</h3>
+      </div>
+
       {loading ? (
         <div style={{ textAlign: 'center', padding: '40px 0' }}>
           <Spin size="large" />
@@ -173,14 +177,10 @@ const PokemonList = () => {
         showSizeChanger
         pageSizeOptions={['12', '24', '36', '48', '60']}
         width="80%"
-        align="left"
+        align="center"
         style={{ marginTop: '20px' }}
         disable={loading}
       />
-
-      <div align="right" width="20%">
-        {total}
-      </div>
     </>
   );
 };
