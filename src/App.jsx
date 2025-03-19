@@ -36,7 +36,7 @@ const App = () => {
       >
         <div>
           <img
-            src="/src/assets/logoPokemon.png"
+            src="/public/assets/logoPokemon.png"
             alt="Pokemon logo"
             style={{
               marginTop: '20px',
@@ -100,7 +100,7 @@ const App = () => {
                 <Image
                   width={'70%'}
                   preview={false}
-                  src="./src/assets/pokemonStarterv1.png"
+                  src="/public/assets/pokemonStarterv1.png"
                 />
               </div>
             </Col>
