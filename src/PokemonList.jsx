@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import PokemonCard from './PokemonCard';
-import { Row, Col, Pagination, Radio, Select } from 'antd';
+import { Row, Col, Pagination, Radio, Select, Spin } from 'antd';
 import axios from 'axios';
 
-// Function to get color based on type
 const getTypeColor = (type) => {
   const typeColors = {
     fire: '#E66D00',
@@ -13,95 +12,106 @@ const getTypeColor = (type) => {
     flying: '#A890F0',
     electric: '#FFD700',
     normal: '#A8A878',
+    fighting: '#C03028',
+    ground: '#E0C068',
+    rock: '#B8A038',
+    bug: '#A8B820',
+    ghost: '#705898',
+    steel: '#B8B8D0',
+    psychic: '#F85888',
+    ice: '#98D8D8',
+    dragon: '#7038F8',
+    dark: '#705848',
+    fairy: '#EE99AC',
   };
-
-  return typeColors[type] || '#999'; // Default color if type not found
+  return typeColors[type] || '#999';
 };
 
 const PokemonList = () => {
   const [pokemonList, setPokemonList] = useState([]);
-  const [allPokemon, setAllPokemon] = useState([]); // Store unfiltered Pokémon list
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(12);
+  const [filterType, setFilterType] = useState('fire');
   const [total, setTotal] = useState(0);
-  const [filterType, SetFilterType] = useState('all');
+  const [loading, setLoading] = useState(false);
+  const [typeData, setTypeData] = useState([]);
 
-  const typeChange = (e) => {
-    SetFilterType(e.target.value);
+  const changeType = (e) => {
+    setFilterType(e.target.value);
+    setCurrentPage(1);
   };
 
+  //get all pokemon from the selected type
   useEffect(() => {
-    // Function to get Pokemon data
-    const fetchPokemon = async () => {
+    const fetchPokemonByType = async () => {
+      setLoading(true);
       try {
-        // Step 1: Get list of Pokémon (limit 10)
         const response = await axios.get(
-          `https://pokeapi.co/api/v2/pokemon?offset=${
-            (currentPage - 1) * pageSize
-          }&limit=${pageSize}`
+          `https://pokeapi.co/api/v2/type/${filterType}`
         );
+        const typeOfPokemon = response.data.pokemon;
 
-        // Step 2: Get the list of Pokemon names & URLs
-        // API response save in "results":[{name: "bulbasaur", url: "https://pokeapi.co/api/v2/pokemon/1/"}]
-        const pokemonList = response.data.results;
-        setTotal(response.data.count);
+        setTotal(typeOfPokemon.length);
+        setTypeData(typeOfPokemon);
 
-        // Step 3: Prepare array to save all the pokemon
-        let detailedPokemon = [];
-
-        for (let pokemon of pokemonList) {
-          const res = await axios.get(pokemon.url); // Get detailed data
-          const pokeInfo = res.data;
-          //console.log(pokeInfo);
-
-          // Step 4: Format the data to be easier to use
-          const pokemonData = {
-            id: `#${pokeInfo.id.toString().padStart(3, '0')}`, // Format ID as #001
-            name:
-              pokeInfo.name.charAt(0).toUpperCase() +
-              pokeInfo.name.slice(1), // Capitalize name
-            image:
-              pokeInfo.sprites.other['official-artwork']
-                .front_default, // Get image from "sprites -> other -> official-artwork -> front_default"
-            types: pokeInfo.types.map((t) => ({
-              name: t.type.name, // Pokémon type (fire, water, etc.)
-              color: getTypeColor(t.type.name), // Get color based on type
-            })),
-            weight: pokeInfo.weight,
-            height: pokeInfo.height,
-            abilities: pokeInfo?.abilities?.map((a) => ({
-              ability: a.ability.name,
-            })),
-          };
-
-          // Add the formatted Pokémon data to our list
-          detailedPokemon.push(pokemonData);
-          console.log(detailedPokemon);
-        }
-
-        // Step 5: Save the Pokémon list in state
-        setAllPokemon(detailedPokemon); // Save unfiltered Pokémon list
-        setPokemonList(detailedPokemon);
+        await loadPokemonPage(typeOfPokemon, 1, pageSize);
       } catch (error) {
-        console.error('Error fetching Pokémon:', error);
+        console.log('error fetching Pokemon', error);
+      } finally {
+        setLoading(false);
       }
     };
-
-    fetchPokemon();
-  }, [currentPage, pageSize]);
+    fetchPokemonByType();
+  }, [filterType]);
 
   useEffect(() => {
-    // Apply filter when `placement` changes
-    const filteredPokemon =
-      filterType === 'all'
-        ? allPokemon // Show all Pokémon if 'all' is selected
-        : allPokemon.filter((pokemon) =>
-            pokemon.types.some((t) => t.name === filterType)
-          );
+    if (typeData.length > 0) {
+      loadPokemonPage(typeData, currentPage, pageSize);
+    }
+  }, [currentPage, pageSize]);
 
-    setPokemonList(filteredPokemon);
-  }, [filterType, allPokemon]);
+  const loadPokemonPage = async (pokemonData, page, size) => {
+    setLoading(true);
+    try {
+      const startIndex = (page - 1) * size;
+      const endIndex = Math.min(
+        startIndex + size,
+        pokemonData.length
+      );
 
+      const pageData = pokemonData.slice(startIndex, endIndex);
+
+      let detailedPokemon = [];
+      for (let pokemon of pageData) {
+        const res = await axios.get(pokemon.pokemon.url);
+        const pokeInfo = res.data;
+
+        const pokemonData = {
+          id: `#${pokeInfo.id.toString().padStart(3, '0')}`,
+          name:
+            pokeInfo.name.charAt(0).toUpperCase() +
+            pokeInfo.name.slice(1),
+          image:
+            pokeInfo.sprites.other['official-artwork'].front_default,
+          types: pokeInfo.types.map((t) => ({
+            name: t.type.name,
+            color: getTypeColor(t.type.name),
+          })),
+          weight: pokeInfo.weight,
+          height: pokeInfo.height,
+          abilities: pokeInfo?.abilities?.map((a) => ({
+            ability: a.ability.name,
+          })),
+        };
+        detailedPokemon.push(pokemonData);
+      }
+      setPokemonList(detailedPokemon);
+    } catch (error) {
+      console.log('Error loading page', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   const handlePageChange = (page, pageSize) => {
     setCurrentPage(page);
     setPageSize(pageSize);
@@ -111,10 +121,9 @@ const PokemonList = () => {
     <>
       <Radio.Group
         value={filterType}
-        onChange={typeChange}
+        onChange={changeType}
         style={{ marginBottom: '20px' }}
       >
-        <Radio.Button value="all">All</Radio.Button>
         <Radio.Button value="fire">Fire</Radio.Button>
         <Radio.Button value="water">Water</Radio.Button>
         <Radio.Button value="grass">Grass</Radio.Button>
@@ -122,26 +131,56 @@ const PokemonList = () => {
         <Radio.Button value="flying">Flying</Radio.Button>
         <Radio.Button value="electric">Electric</Radio.Button>
         <Radio.Button value="normal">Normal</Radio.Button>
+        <Radio.Button value="fighting">Fighting</Radio.Button>
+        <Radio.Button value="ground">Ground</Radio.Button>
+        <Radio.Button value="rock">Rock</Radio.Button>
+        <Radio.Button value="bug">Bug</Radio.Button>
+        <Radio.Button value="ghost">Ghost</Radio.Button>
+        <Radio.Button value="steel">Steel</Radio.Button>
+        <Radio.Button value="psychic">Psychic</Radio.Button>
+        <Radio.Button value="ice">Ice</Radio.Button>
+        <Radio.Button value="dragon">Dragon</Radio.Button>
+        <Radio.Button value="dark">Dark</Radio.Button>
+        <Radio.Button value="fairy">Fairy</Radio.Button>
       </Radio.Group>
 
-      <Row gutter={[16, 16]}>
-        {/* Show all PokemonCard */}
-        {pokemonList.map((pokemon) => (
-          <Col xs={24} sm={12} md={8} lg={8} xl={6} key={pokemon.id}>
-            <PokemonCard pokemon={pokemon} />
-          </Col>
-        ))}
-      </Row>
+      {loading ? (
+        <div style={{ textAlign: 'center', padding: '40px 0' }}>
+          <Spin size="large" />
+        </div>
+      ) : (
+        <Row gutter={[16, 16]}>
+          {pokemonList.map((pokemon) => (
+            <Col
+              xs={24}
+              sm={12}
+              md={8}
+              lg={8}
+              xl={6}
+              key={pokemon.id}
+            >
+              <PokemonCard pokemon={pokemon} />
+            </Col>
+          ))}
+        </Row>
+      )}
+
       <Pagination
         current={currentPage}
         pageSize={pageSize}
         total={total}
         onChange={handlePageChange}
         showSizeChanger
-        pageSizeOptions={['12', '24', '36', '48', '60']} // Available options
-        align="center"
-        style={{ marginTop: '10px' }}
+        pageSizeOptions={['12', '24', '36', '48', '60']}
+        width="80%"
+        align="left"
+        style={{ marginTop: '20px' }}
+        disable={loading}
       />
+
+      <div align="right" width="20%">
+        {total}
+      </div>
     </>
   );
 };
