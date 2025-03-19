@@ -70,7 +70,7 @@ const App = () => {
                     color: '#42494D',
                   }}
                 >
-                  All the Pokémon data you'll ever need in one place!
+                  All the Pokémon data you'll ever need in one place!!
                 </Typography.Title>
                 <Typography.Title level={3} style={{ color: 'gray' }}>
                   Thousands of data compiled into one place
