@@ -100,7 +100,7 @@ const App = () => {
                 <Image
                   width={'70%'}
                   preview={false}
-                  src="/src/assets/pokemonStarterv1.png"
+                  src="./src/assets/pokemonStarterv1.png"
                 />
               </div>
             </Col>
