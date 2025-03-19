@@ -36,7 +36,7 @@ const App = () => {
       >
         <div>
           <img
-            src="/public/assets/logoPokemon.png"
+            src="assets/logoPokemon.png"
             alt="Pokemon logo"
             style={{
               marginTop: '20px',
